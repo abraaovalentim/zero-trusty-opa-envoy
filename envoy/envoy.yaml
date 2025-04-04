@@ -16,35 +16,34 @@ static_resources:
                       domains: ["*"]
                       routes:
                         - match: { prefix: "/" }
-                          route: 
-                            cluster: server
-                            timeout: 0s
+                          route: { cluster: server }
                 http_filters:
-  - name: envoy.filters.http.ext_authz
-    typed_config:
-      "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthz
-      transport_api_version: V3  # 🔥 Adicione esta linha!
-      grpc_service:
-        envoy_grpc:
-          cluster_name: opa
-        timeout: 1s
+                  - name: envoy.filters.http.ext_authz
+                    typed_config:
+                      "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthz
+                      transport_api_version: V3
+                      grpc_service:
+                        envoy_grpc:
+                          cluster_name: opa
+                        timeout: 0.5s
                   - name: envoy.filters.http.router
+                    typed_config:
+                      "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+
   clusters:
     - name: server
-      type: strict_dns
-      connect_timeout: 2s
+      type: STRICT_DNS
       lb_policy: ROUND_ROBIN
-      http2_protocol_options: {} 
       load_assignment:
         cluster_name: server
         endpoints:
           - lb_endpoints:
               - endpoint:
                   address:
-                    socket_address: { address: server, port_value: 5000 }
+                    socket_address: { address: 127.0.0.1, port_value: 5000 }
+
     - name: opa
-      type: strict_dns  
-      connect_timeout: 2s
+      type: STRICT_DNS
       lb_policy: ROUND_ROBIN
       http2_protocol_options: {}
       load_assignment:
@@ -54,6 +53,9 @@ static_resources:
               - endpoint:
                   address:
                     socket_address: { address: opa, port_value: 9191 }
+
 admin:
   address:
-    socket_address: { address: 0.0.0.0, port_value: 8001 }
+    socket_address:
+      address: 0.0.0.0
+      port_value: 8001

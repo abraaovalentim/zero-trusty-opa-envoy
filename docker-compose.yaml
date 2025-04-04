@@ -21,6 +21,8 @@ services:
     command: ["run", "--server", "--addr", ":9191", "--set", "decision_logs.console=true"]
     volumes:
       - ./opa/policy.rego:/policy.rego
+    ports:
+      - "9191:9191"
     networks:
       - zero-trust-net
 
