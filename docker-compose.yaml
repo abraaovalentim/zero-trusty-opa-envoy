@@ -1,0 +1,42 @@
+version: "3.8"
+services:
+  client:
+    build: ./client
+    environment:
+      - REQUEST_METHOD=GET  
+    depends_on:
+      - envoy
+    networks:
+      - zero-trust-net
+
+  server:
+    build: ./server
+    ports:
+      - "5000:5000"
+    networks:
+      - zero-trust-net
+
+  opa:
+    image: openpolicyagent/opa:latest
+    command: ["run", "--server", "--addr", ":9191", "--set", "decision_logs.console=true"]
+    volumes:
+      - ./opa/policy.rego:/policy.rego
+    networks:
+      - zero-trust-net
+
+  envoy:
+    image: envoyproxy/envoy:v1.25-latest
+    volumes:
+      - ./envoy/envoy.yaml:/etc/envoy/envoy.yaml
+    ports:
+      - "8080:8080"  # Envoy
+      - "8001:8001"  # Admin
+    depends_on:
+      - opa
+      - server
+    networks:
+      - zero-trust-net   
+
+networks:
+  zero-trust-net:
+    driver: bridge
