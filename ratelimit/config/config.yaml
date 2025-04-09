@@ -1,0 +1,7 @@
+domain: envoy
+descriptors:
+  - key: generic_key
+    value: default
+    rate_limit:
+      unit: second
+      requests_per_unit: 5
