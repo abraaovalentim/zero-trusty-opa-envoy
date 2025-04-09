@@ -1,0 +1,6 @@
+domain: rate_limit_service
+descriptors:
+  - key: remote_address
+    rate_limit:
+      unit: minute
+      requests_per_unit: 10  # 10 requisições por minuto por IP

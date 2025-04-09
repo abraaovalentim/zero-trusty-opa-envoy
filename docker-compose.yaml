@@ -3,42 +3,32 @@ services:
   client:
     build: ./client
     environment:
-      - REQUEST_METHOD=GET  
+      - TARGET_URL=https://envoy:8443
     depends_on:
       - envoy
     networks:
-      - zero-trust-net
+      - app_network
 
   server:
     build: ./server
-    ports:
-      - "5000:5000"
+    expose:
+      - "5000"
     networks:
-      - zero-trust-net
-
-  opa:
-    image: openpolicyagent/opa:latest
-    command: ["run", "--server", "--addr", ":9191", "--set", "decision_logs.console=true"]
-    volumes:
-      - ./opa/policy.rego:/policy.rego
-    ports:
-      - "9191:9191"
-    networks:
-      - zero-trust-net
+      - app_network
 
   envoy:
     image: envoyproxy/envoy:v1.25-latest
     volumes:
       - ./envoy/envoy.yaml:/etc/envoy/envoy.yaml
+      - ./envoy/certs:/etc/envoy/certs
+      - ./envoy/ratelimit:/etc/envoy/ratelimit
     ports:
-      - "8080:8080"  # Envoy
+      - "8443:8443"  # HTTPS
       - "8001:8001"  # Admin
-    depends_on:
-      - opa
-      - server
+    command: ["-c", "/etc/envoy/envoy.yaml", "--service-cluster", "proxy-cluster"]
     networks:
-      - zero-trust-net   
+      - app_network
 
 networks:
-  zero-trust-net:
+  app_network:
     driver: bridge
