@@ -43,3 +43,10 @@ services:
       - REDIS_SOCKET_TYPE=tcp
       - REDIS_URL=redis:6379
       - LOG_LEVEL=debug
+
+  opa:
+    build: ./opa
+    ports:
+      - "8181:8181"
+    volumes:
+      - ./opa/policies:/policies
